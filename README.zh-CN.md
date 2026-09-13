@@ -30,7 +30,7 @@ OpenCode 插件：改写 provider 出站请求的 **User-Agent** 并增删 **HTT
 // opencode.jsonc
 {
   "plugin": [
-    ["opencode-fetch-writer@0.1.1", {
+    ["opencode-fetch-writer@0.1.2", {
       "providerId": "my-provider",
       "uaTarget": "my-app/1.0.0",
       "headersToStrip": ["x-unwanted-header"],
@@ -51,7 +51,7 @@ OpenCode 插件：改写 provider 出站请求的 **User-Agent** 并增删 **HTT
 {
   "plugins": [
     {
-      "package": "opencode-fetch-writer@0.1.1",
+      "package": "opencode-fetch-writer@0.1.2",
       "options": {
         "providerId": "my-provider",
         "uaTarget": "my-app/1.0.0",

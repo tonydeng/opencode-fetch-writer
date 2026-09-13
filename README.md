@@ -30,7 +30,7 @@ Edit your OpenCode config file (global `~/.config/opencode/opencode.jsonc`, or p
 // opencode.jsonc
 {
   "plugin": [
-    ["opencode-fetch-writer@0.1.1", {
+    ["opencode-fetch-writer@0.1.2", {
       "providerId": "my-provider",
       "uaTarget": "my-app/1.0.0",
       "headersToStrip": ["x-unwanted-header"],
@@ -51,7 +51,7 @@ Edit your OpenCode config file (global `~/.config/opencode/opencode.jsonc`, or p
 {
   "plugins": [
     {
-      "package": "opencode-fetch-writer@0.1.1",
+      "package": "opencode-fetch-writer@0.1.2",
       "options": {
         "providerId": "my-provider",
         "uaTarget": "my-app/1.0.0",
