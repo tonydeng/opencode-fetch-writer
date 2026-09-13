@@ -34,6 +34,17 @@ jobs:
           node-version: 22
           registry-url: https://registry.npmjs.org
 
+      - name: Diagnose auth
+        run: |
+          if [ -z "${NODE_AUTH_TOKEN}" ]; then
+            echo "::error::NPM_TOKEN secret is EMPTY - secret name is case-sensitive, must be exactly NPM_TOKEN"
+            exit 1
+          fi
+          echo "NPM_TOKEN is set (length: ${#NODE_AUTH_TOKEN})"
+          npm whoami || echo "whoami failed - see error above"
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
       - name: Publish
         run: npm publish --access public
         env:
