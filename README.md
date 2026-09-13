@@ -23,7 +23,7 @@ This plugin solves both by wrapping the provider's `options.fetch` through the o
 // opencode.jsonc
 {
   "plugin": [
-    ["opencode-fetch-writer@0.1.0", {
+    ["opencode-fetch-writer@0.1.1", {
       "providerId": "my-provider",
       "uaTarget": "my-app/1.0.0",
       "headersToStrip": ["x-unwanted-header"],
@@ -41,7 +41,7 @@ This plugin solves both by wrapping the provider's `options.fetch` through the o
 {
   "plugins": [
     {
-      "package": "opencode-fetch-writer@0.1.0",
+      "package": "opencode-fetch-writer@0.1.1",
       "options": {
         "providerId": "my-provider",
         "uaTarget": "my-app/1.0.0",

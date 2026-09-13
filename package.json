@@ -1,6 +1,6 @@
 {
   "name": "opencode-fetch-writer",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "OpenCode plugin: rewrite User-Agent and add/remove headers on provider requests",
   "type": "module",
   "main": "./dist/index.js",
