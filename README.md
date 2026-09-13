@@ -30,7 +30,7 @@ Edit your OpenCode config file (global `~/.config/opencode/opencode.jsonc`, or p
 // opencode.jsonc
 {
   "plugin": [
-    ["opencode-fetch-writer@0.1.2", {
+    ["opencode-fetch-writer@0.2.0", {
       "providerId": "my-provider",
       "uaTarget": "my-app/1.0.0",
       "headersToStrip": ["x-unwanted-header"],
@@ -51,7 +51,7 @@ Edit your OpenCode config file (global `~/.config/opencode/opencode.jsonc`, or p
 {
   "plugins": [
     {
-      "package": "opencode-fetch-writer@0.1.2",
+      "package": "opencode-fetch-writer@0.2.0",
       "options": {
         "providerId": "my-provider",
         "uaTarget": "my-app/1.0.0",
@@ -101,10 +101,33 @@ Three checks, fastest first:
 
    No output = the plugin loaded fine.
 
+## Multiple providers
+
+Since v0.2.0 one plugin entry can manage several providers through the `providers` map (mutually exclusive with the legacy top-level `providerId`):
+
+```jsonc
+{
+  "plugin": [
+    ["opencode-fetch-writer@0.2.0", {
+      "providers": {
+        "corp-gateway": { "uaTarget": "my-corp-agent/2.1", "headersToStrip": ["x-unwanted-header"] },
+        "partner-gw": { "uaTarget": "partner-client/1.0" }
+      }
+    }]
+  ]
+}
+```
+
+Each provider gets its own rule. `FETCH_WRITER_UA` still applies to providers without an explicit `uaTarget`. Providers missing from your config are skipped (logged in debug mode).
+
+> On versions before 0.2.0 the same effect is achievable by listing the plugin twice with different options — the `providers` map just keeps it to one entry.
+
 ## Options
 
 | Option | Type | Default | Description |
 |---|---|---|---|
+| `providerId` | `string` | — | Legacy single-provider mode: provider ID (key in your `provider` map). Required unless `providers` is set. |
+| `providers` | `Record<string, ProviderRule>` | — | Multi-provider mode: map of provider ID → rule (`uaTarget` / `headersToStrip` / `headersToInject`). Mutually exclusive with `providerId`. |
 | `providerId` | `string` | — | Provider ID (key in your `provider` map). **Required** — the plugin stays inactive without it. |
 | `uaTarget` | `string` | — | Target User-Agent. Omit to leave the UA unchanged. |
 | `headersToStrip` | `string[]` | `[]` | Header names to delete from outgoing requests. |

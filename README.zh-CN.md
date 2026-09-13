@@ -30,7 +30,7 @@ OpenCode 插件：改写 provider 出站请求的 **User-Agent** 并增删 **HTT
 // opencode.jsonc
 {
   "plugin": [
-    ["opencode-fetch-writer@0.1.2", {
+    ["opencode-fetch-writer@0.2.0", {
       "providerId": "my-provider",
       "uaTarget": "my-app/1.0.0",
       "headersToStrip": ["x-unwanted-header"],
@@ -51,7 +51,7 @@ OpenCode 插件：改写 provider 出站请求的 **User-Agent** 并增删 **HTT
 {
   "plugins": [
     {
-      "package": "opencode-fetch-writer@0.1.2",
+      "package": "opencode-fetch-writer@0.2.0",
       "options": {
         "providerId": "my-provider",
         "uaTarget": "my-app/1.0.0",
@@ -101,10 +101,33 @@ OpenCode 插件：改写 provider 出站请求的 **User-Agent** 并增删 **HTT
 
    无输出 = 插件加载正常。
 
+## 多 Provider
+
+v0.2.0 起支持通过 `providers` 映射在**一个插件条目**中管理多个 provider（与顶层单 provider 字段 `providerId` 互斥）：
+
+```jsonc
+{
+  "plugin": [
+    ["opencode-fetch-writer@0.2.0", {
+      "providers": {
+        "corp-gateway": { "uaTarget": "my-corp-agent/2.1", "headersToStrip": ["x-unwanted-header"] },
+        "partner-gw": { "uaTarget": "partner-client/1.0" }
+      }
+    }]
+  ]
+}
+```
+
+每个 provider 拥有独立规则；`FETCH_WRITER_UA` 仍然作用于所有未显式配置 `uaTarget` 的 provider。配置中不存在的 provider 会被跳过（debug 模式下有日志）。
+
+> 在 0.2.0 之前的版本，将同一插件写多条目（各带不同 options）也能达到相同效果——`providers` 映射只是把配置收敛为一条。
+
 ## Options
 
 | 选项 | 类型 | 默认值 | 说明 |
 |---|---|---|---|
+| `providerId` | `string` | — | 旧版单 provider 模式：Provider ID（`provider` 映射中的键）。未设 `providers` 时必填。 |
+| `providers` | `Record<string, ProviderRule>` | — | 多 provider 模式：provider ID → 规则（`uaTarget` / `headersToStrip` / `headersToInject`）的映射。与 `providerId` 互斥。 |
 | `providerId` | `string` | — | Provider ID（`provider` 映射中的键）。**必填**——缺省时插件不激活。 |
 | `uaTarget` | `string` | — | 目标 User-Agent。缺省则不改写 UA。 |
 | `headersToStrip` | `string[]` | `[]` | 需要从出站请求中删除的 header 名。 |

@@ -23,7 +23,7 @@ Full `opencode.jsonc` (v1 tuple syntax):
     }
   },
   "plugin": [
-    ["opencode-fetch-writer@0.1.2", {
+    ["opencode-fetch-writer@0.2.0", {
       "providerId": "corp-gateway",
       "uaTarget": "my-corp-agent/2.1 (linux x86_64)",
       "headersToStrip": ["x-legacy-affinity"],
@@ -41,9 +41,30 @@ If you only need a UA fix and nothing else:
 ```jsonc
 {
   "plugin": [
-    ["opencode-fetch-writer@0.1.2", {
+    ["opencode-fetch-writer@0.2.0", {
       "providerId": "corp-gateway",
       "uaTarget": "my-corp-agent/2.1 (linux x86_64)"
+    }]
+  ]
+}
+```
+
+Two gateways, one plugin entry (v0.2.0+ `providers` map):
+
+```jsonc
+{
+  "plugin": [
+    ["opencode-fetch-writer@0.2.0", {
+      "providers": {
+        "corp-gateway": {
+          "uaTarget": "my-corp-agent/2.1 (linux x86_64)",
+          "headersToStrip": ["x-legacy-affinity"]
+        },
+        "partner-gw": {
+          "uaTarget": "partner-client/1.0",
+          "headersToInject": { "X-Partner-Client": "my-app" }
+        }
+      }
     }]
   ]
 }
