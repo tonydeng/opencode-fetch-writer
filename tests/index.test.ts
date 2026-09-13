@@ -162,4 +162,94 @@ describe("fetchWriter", () => {
 
     expect(options.fetch).toBeUndefined()
   })
+
+  test("patches multiple providers via the providers map", async () => {
+    const seen: Record<string, Headers> = {}
+    const mkProvider = (id: string) => {
+      const options: Record<string, unknown> = {
+        fetch: (async (_req: RequestInfo | URL, init?: RequestInit) => {
+          seen[id] = new Headers(init?.headers)
+          return new Response("ok")
+        }) as WrappedFetch,
+      }
+      return [id, { options }] as const
+    }
+    const config = { provider: Object.fromEntries([mkProvider("acme"), mkProvider("corp")]) } as ConfigParam
+
+    const hooks = await fetchWriter(input, {
+      providers: {
+        acme: { uaTarget: "app-a/1.0", headersToStrip: ["x-unwanted"] },
+        corp: { uaTarget: "app-b/2.0", headersToInject: { "x-corp": "yes" } },
+      },
+    })
+    await hooks.config?.(config)
+
+    const acmeFetch = (config.provider!["acme"].options as Record<string, unknown>).fetch as WrappedFetch
+    const corpFetch = (config.provider!["corp"].options as Record<string, unknown>).fetch as WrappedFetch
+    expect(acmeFetch[MARKER]).toBe(true)
+    expect(corpFetch[MARKER]).toBe(true)
+
+    await acmeFetch("https://example.com/a", { headers: { "x-unwanted": "drop" } })
+    expect(seen["acme"].get("user-agent")).toBe("app-a/1.0")
+    expect(seen["acme"].get("x-unwanted")).toBeNull()
+
+    await corpFetch("https://example.com/b", {})
+    expect(seen["corp"].get("user-agent")).toBe("app-b/2.0")
+    expect(seen["corp"].get("x-corp")).toBe("yes")
+  })
+
+  test("providerId and providers are mutually exclusive", async () => {
+    const { config, options } = makeConfig("acme")
+
+    const hooks = await fetchWriter(input, {
+      providerId: "acme",
+      providers: { acme: { uaTarget: "x/1.0" } },
+    })
+    await hooks.config?.(config)
+
+    expect(options.fetch).toBeUndefined()
+  })
+
+  test("FETCH_WRITER_UA applies to providers without an explicit uaTarget", async () => {
+    process.env.FETCH_WRITER_UA = "env-agent/9.0"
+    try {
+      const seen: Record<string, Headers> = {}
+      const mkProvider = (id: string) => {
+        const options: Record<string, unknown> = {
+          fetch: (async (_req: RequestInfo | URL, init?: RequestInit) => {
+            seen[id] = new Headers(init?.headers)
+            return new Response("ok")
+          }) as WrappedFetch,
+        }
+        return [id, { options }] as const
+      }
+      const config = { provider: Object.fromEntries([mkProvider("acme"), mkProvider("corp")]) } as ConfigParam
+
+      const hooks = await fetchWriter(input, {
+        providers: { acme: { uaTarget: "explicit/1.0" }, corp: {} },
+      })
+      await hooks.config?.(config)
+
+      const acmeFetch = (config.provider!["acme"].options as Record<string, unknown>).fetch as WrappedFetch
+      const corpFetch = (config.provider!["corp"].options as Record<string, unknown>).fetch as WrappedFetch
+      await acmeFetch("https://example.com/a", {})
+      await corpFetch("https://example.com/b", {})
+      expect(seen["acme"].get("user-agent")).toBe("explicit/1.0")
+      expect(seen["corp"].get("user-agent")).toBe("env-agent/9.0")
+    } finally {
+      delete process.env.FETCH_WRITER_UA
+    }
+  })
+
+  test("providers missing from config are skipped, others still patched", async () => {
+    const { config, options } = makeConfig("acme")
+
+    const hooks = await fetchWriter(input, {
+      providers: { acme: { uaTarget: "app-a/1.0" }, ghost: { uaTarget: "app-g/1.0" } },
+    })
+    await hooks.config?.(config)
+
+    const wrapped = options.fetch as WrappedFetch
+    expect(wrapped[MARKER]).toBe(true)
+  })
 })
