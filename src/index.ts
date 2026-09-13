@@ -37,8 +37,12 @@ export interface FetchWriterOptions {
   debug?: boolean
 }
 
-/** Marker guard: prevents double-wrapping when the plugin is loaded twice */
-export const MARKER = "__fetchWriterPatched"
+/**
+ * Marker guard: prevents double-wrapping when the plugin is loaded twice.
+ * NOT exported: OpenCode's loader requires every module export to be a
+ * function ("Plugin export is not a function" otherwise, v0.1.0 lesson).
+ */
+const MARKER = "__fetchWriterPatched"
 
 export const fetchWriter: Plugin = async (_input, options?: FetchWriterOptions) => {
   const providerId = options?.providerId
