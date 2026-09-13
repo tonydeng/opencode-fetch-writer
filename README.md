@@ -17,6 +17,13 @@ This plugin solves both by wrapping the provider's `options.fetch` through the o
 
 ## Install
 
+Pick the syntax matching your OpenCode version — run `opencode --version`:
+
+- **v1 (1.x)** → tuple syntax
+- **v2 (2.x)** → object syntax
+
+Edit your OpenCode config file (global `~/.config/opencode/opencode.jsonc`, or per-project `.opencode/opencode.jsonc`). Requires **opencode-fetch-writer 0.1.1+** — 0.1.0 is rejected by OpenCode's plugin loader.
+
 ### OpenCode v1 (1.x, tuple syntax)
 
 ```jsonc
@@ -34,6 +41,9 @@ This plugin solves both by wrapping the provider's `options.fetch` through the o
   ]
 }
 ```
+
+> `providerId` is the key of your provider entry inside the same config file's `provider` map.
+> **Restart OpenCode** to apply. The first start downloads the package from npm; later starts use the local cache.
 
 ### OpenCode v2 (object syntax)
 
@@ -63,6 +73,34 @@ This plugin solves both by wrapping the provider's `options.fetch` through the o
 }
 ```
 
+## Verify installation
+
+Three checks, fastest first:
+
+1. **Activation line** — restart OpenCode and watch the terminal where it starts (stderr):
+
+   ```
+   [fetch-writer] patched options.fetch for provider "my-provider"
+   ```
+
+2. **Live rewrite log** — start OpenCode with `FETCH_WRITER_DEBUG=1` and send one request through the provider:
+
+   ```
+   [fetch-writer] user-agent: opencode/1.18.2 ai-sdk/provider-utils/2.1.0 → my-app/1.0.0
+   ```
+
+3. **Load-failure check** — if neither appears, the plugin may have failed to load (this fails silently). Search the OpenCode log:
+
+   ```bash
+   # Linux / macOS
+   grep "failed to load plugin" ~/.local/share/opencode/log/opencode.log
+
+   # Windows (PowerShell)
+   Select-String -Path "$env:USERPROFILE\.local\share\opencode\log\opencode.log" -Pattern "failed to load plugin"
+   ```
+
+   No output = the plugin loaded fine.
+
 ## Options
 
 | Option | Type | Default | Description |
@@ -88,6 +126,7 @@ This plugin solves both by wrapping the provider's `options.fetch` through the o
 
 ## Troubleshooting
 
+- **No activation line at all** — the plugin failed to load. Search the OpenCode log for `failed to load plugin` (see [Verify installation](#verify-installation)). Also confirm you're on **0.1.1+**: 0.1.0 ships a non-function export and is rejected by the loader.
 - **Plugin not taking effect** — check that `providerId` matches the key in your `provider` map exactly (case-sensitive).
 - **UA still overridden** — make sure no other plugin or provider option also sets a custom `fetch` after this one.
 - **Double patching** — the marker guard handles it; if you see the activation line twice, you have two *different* fetch wrappers active, not this plugin twice.
