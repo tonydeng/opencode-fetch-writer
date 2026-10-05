@@ -1,6 +1,6 @@
 {
   "name": "opencode-fetch-writer",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "OpenCode plugin: rewrite User-Agent and add/remove headers on provider requests",
   "type": "module",
   "main": "./dist/index.js",
@@ -14,7 +14,9 @@
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
     "typecheck": "tsc --noEmit",
-    "test": "bun test"
+    "test": "bun test",
+    "verify:package": "node scripts/verify-package.mjs",
+    "verify": "bun run typecheck && bun run build && bun test && bun run verify:package"
   },
   "keywords": [
     "opencode",
@@ -37,10 +39,20 @@
   },
   "homepage": "https://github.com/tonydeng/opencode-fetch-writer#readme",
   "peerDependencies": {
-    "@opencode-ai/plugin": ">=1.0.0"
+    "@opencode-ai/plugin": ">=1.18.29",
+    "@opencode/plugin": ">=2.0.0"
+  },
+  "peerDependenciesMeta": {
+    "@opencode-ai/plugin": {
+      "optional": true
+    },
+    "@opencode/plugin": {
+      "optional": true
+    }
   },
   "devDependencies": {
-    "@opencode-ai/plugin": "^1.17.0",
+    "@opencode-ai/plugin": "^1.18.30",
+    "@opencode/plugin": "^2.0.23",
     "@types/bun": "latest",
     "typescript": "^5.7.0"
   },
