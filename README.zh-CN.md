@@ -29,7 +29,15 @@ OpenCode 插件：改写 provider 出站请求的 **User-Agent** 并增删 **HTT
 - **v1（1.x）**→ 元组语法，配置在 `plugin` 下
 - **v2（2.x）**→ 对象语法，配置在 `plugins` 下
 
-编辑 OpenCode 配置文件（全局 `~/.config/opencode/opencode.jsonc`，或项目级 `.opencode/opencode.jsonc`）。要求 **opencode-fetch-writer 0.1.1+**——0.1.0 会被 OpenCode 插件加载器拒载。OpenCode 1 侧还要求 **1.18.29+**（首个支持对象式入口的版本）。
+编辑 OpenCode 配置文件（全局 `~/.config/opencode/opencode.jsonc`，或项目级 `.opencode/opencode.jsonc`）。各版本对两代 OpenCode 的支持情况：
+
+| opencode-fetch-writer | OpenCode 1.x | OpenCode 2.x |
+|---|---|---|
+| 0.1.0 | ❌（被插件加载器拒载） | ❌ |
+| 0.1.1 – 0.2.x | ✅ | ❌ |
+| 0.3.0+ | ✅（1.18.29+） | ✅ |
+
+**0.3.0** 起同一个包同时支持两代；OpenCode 1 侧还要求 **1.18.29+**（首个支持对象式入口的版本）。
 
 ### OpenCode v1（1.x，元组语法）
 

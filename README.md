@@ -29,7 +29,15 @@ Pick the syntax matching your OpenCode version — run `opencode --version`:
 - **v1 (1.x)** → tuple syntax, under `plugin`
 - **v2 (2.x)** → object syntax, under `plugins`
 
-Edit your OpenCode config file (global `~/.config/opencode/opencode.jsonc`, or per-project `.opencode/opencode.jsonc`). Requires **opencode-fetch-writer 0.1.1+** — 0.1.0 is rejected by OpenCode's plugin loader. OpenCode 1 support additionally requires **1.18.29+** (the release that accepts the object entrypoint).
+Edit your OpenCode config file (global `~/.config/opencode/opencode.jsonc`, or per-project `.opencode/opencode.jsonc`). Which package version supports which OpenCode generation:
+
+| opencode-fetch-writer | OpenCode 1.x | OpenCode 2.x |
+|---|---|---|
+| 0.1.0 | ❌ (rejected by the plugin loader) | ❌ |
+| 0.1.1 – 0.2.x | ✅ | ❌ |
+| 0.3.0+ | ✅ (1.18.29+) | ✅ |
+
+From **0.3.0** the same package serves both generations; on OpenCode 1 it additionally requires **1.18.29+** (the release that accepts the object entrypoint).
 
 ### OpenCode v1 (1.x, tuple syntax)
 
