@@ -28,6 +28,7 @@ jobs:
           bun run typecheck
           bun run build
           bun test
+          bun run verify:package
 
       - uses: actions/setup-node@v4
         with:
