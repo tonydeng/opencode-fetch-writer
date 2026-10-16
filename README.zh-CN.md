@@ -45,7 +45,7 @@ OpenCode 插件：改写 provider 出站请求的 **User-Agent** 并增删 **HTT
 // opencode.jsonc
 {
   "plugin": [
-    ["opencode-fetch-writer@0.3.0", {
+    ["opencode-fetch-writer@0.4.0", {
       "providerId": "my-provider",
       "uaTarget": "my-app/1.0.0",
       "headersToStrip": ["x-unwanted-header"],
@@ -67,7 +67,7 @@ OpenCode 插件：改写 provider 出站请求的 **User-Agent** 并增删 **HTT
   "$schema": "https://opencode.ai/config.json",
   "plugins": [
     {
-      "package": "opencode-fetch-writer@0.3.0",
+      "package": "opencode-fetch-writer@0.4.0",
       "options": {
         "providerId": "my-provider",
         "uaTarget": "my-app/1.0.0",
@@ -154,7 +154,7 @@ v0.2.0 起支持通过 `providers` 映射在**一个插件条目**中管理多�
 {
   "plugins": [
     {
-      "package": "opencode-fetch-writer@0.3.0",
+      "package": "opencode-fetch-writer@0.4.0",
       "options": {
         "providers": {
           "corp-gateway": { "uaTarget": "my-corp-agent/2.1", "headersToStrip": ["x-unwanted-header"] },
@@ -169,6 +169,26 @@ v0.2.0 起支持通过 `providers` 映射在**一个插件条目**中管理多�
 每个 provider 拥有独立规则；`FETCH_WRITER_UA` 仍然作用于所有未显式配置 `uaTarget` 的 provider。配置中不存在的 provider 会被跳过（debug 模式下有日志）。
 
 > 在 0.2.0 之前的版本，将同一插件写多条目（各带不同 options）也能达到相同效果——`providers` 映射只是把配置收敛为一条。
+
+## 工具改名（v1，0.4.0+）
+
+部分网关会按请求体中的工具名计数或过滤。`toolRenameSuffix` 为出站请求中的每个工具名追加后缀——`tools` 列表、消息历史的 `tool_calls`、具名 `tool_choice`——并将响应 `tool_calls` 的名字还原，宿主侧继续使用原始工具名。
+
+```jsonc
+// v1 元组语法
+{
+  "plugin": [
+    ["opencode-fetch-writer@0.4.0", {
+      "providerId": "my-provider",
+      "toolRenameSuffix": "_x"
+    }]
+  ]
+}
+```
+
+- **仅 V1。** V2 的 `http.request` hook 拿到的请求体已完成编码，该选项被忽略并打一条 error 日志。
+- **仅 OpenAI 兼容请求体。** Anthropic 形态原样放行。
+- fail-open：无 tools 的请求、非 JSON 请求体、无法缓冲的流式请求体均原样发送。
 
 ## Options
 
