@@ -52,8 +52,10 @@ export const fetchWriterV2: OpencodePlugin.Plugin = {
 
     for (const rule of rules.values()) {
       if (rule.toolRenameSuffix !== undefined) {
-        console.error(
-          `${LOG_PREFIX} toolRenameSuffix needs body rewriting, which the V2 http.request hook cannot reach (the request body is already encoded); option ignored`,
+        // Debug-level: on OpenCode 1.x both entries load and V1 handles the
+        // rename, so an unconditional warning here would be pure noise there.
+        log(
+          "toolRenameSuffix needs body rewriting, which the V2 http.request hook cannot reach (the request body is already encoded); option ignored",
         )
         break
       }
