@@ -16,6 +16,12 @@ export interface ProviderRule {
   headersToStrip?: string[]
   /** Headers to inject when missing. Never overwrites existing values. Default: {} */
   headersToInject?: Record<string, string>
+  /**
+   * Append this suffix to every tool name in the request body (tools list,
+   * message-history tool_calls, named tool_choice) and restore original names
+   * in response tool_calls. V1 only. Omit to leave bodies untouched.
+   */
+  toolRenameSuffix?: string
 }
 
 export interface FetchWriterOptions extends ProviderRule {
@@ -37,6 +43,7 @@ export type NormalizedRule = {
   uaTarget?: string
   headersToStrip: string[]
   headersToInject: Record<string, string>
+  toolRenameSuffix?: string
 }
 
 /** Log prefix shared by both entrypoints. */
@@ -60,6 +67,7 @@ export function normalize(options?: FetchWriterOptions): Map<string, NormalizedR
       uaTarget: options.uaTarget ?? envUa,
       headersToStrip: options.headersToStrip ?? [],
       headersToInject: options.headersToInject ?? {},
+      toolRenameSuffix: options.toolRenameSuffix,
     })
   } else if (options?.providers) {
     for (const [id, rule] of Object.entries(options.providers)) {
@@ -67,6 +75,7 @@ export function normalize(options?: FetchWriterOptions): Map<string, NormalizedR
         uaTarget: rule?.uaTarget ?? envUa,
         headersToStrip: rule?.headersToStrip ?? [],
         headersToInject: rule?.headersToInject ?? {},
+        toolRenameSuffix: rule?.toolRenameSuffix,
       })
     }
   }

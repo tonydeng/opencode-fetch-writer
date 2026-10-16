@@ -19,7 +19,9 @@ import {
   normalize,
   reportConfigurationError,
   type FetchWriterOptions,
+  type NormalizedRule,
 } from "./rule.js"
+import { readRequestBody, rewriteRequestBody, wrapResponseRewrite } from "./body.js"
 
 /**
  * Marker guard: prevents double-wrapping when the plugin is loaded twice.
@@ -36,7 +38,7 @@ const MARKER = "__fetchWriterPatched"
 export function patchProviderFetch(
   providerId: string,
   options: Record<string, unknown> | undefined,
-  rule: { uaTarget?: string; headersToStrip: string[]; headersToInject: Record<string, string> },
+  rule: NormalizedRule,
   log: (msg: string) => void,
 ): boolean {
   const opts = (options ??= {}) as Record<string, unknown>
@@ -59,6 +61,22 @@ export function patchProviderFetch(
       }
 
       applyRule(headers, rule, log)
+
+      // Tool rename: suffix every outbound tool name, restore on the way back.
+      if (rule.toolRenameSuffix !== undefined) {
+        const raw = await readRequestBody(req, init)
+        const rewrite = raw === undefined ? undefined : rewriteRequestBody(raw, rule.toolRenameSuffix, log)
+        if (rewrite !== undefined) {
+          headers.set("content-length", String(new TextEncoder().encode(rewrite.body).length))
+          const response =
+            init === undefined && typeof Request !== "undefined" && req instanceof Request
+              ? // new Request(req, init) inherits url/method/signal/credentials from the
+                // original and only overrides what init provides, so abort still propagates.
+                await realFetch(new Request(req, { headers, body: rewrite.body }))
+              : await realFetch(req, { ...(init ?? {}), headers, body: rewrite.body })
+          return wrapResponseRewrite(response, rewrite.reverseMap, log)
+        }
+      }
 
       return realFetch(req, init ? { ...init, headers } : { headers })
     } catch (err) {

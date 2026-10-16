@@ -176,10 +176,11 @@ Each provider gets its own rule. `FETCH_WRITER_UA` still applies to providers wi
 | Option | Type | Default | Description |
 |---|---|---|---|
 | `providerId` | `string` | — | Legacy single-provider mode: provider ID (key in your `provider` map). Required unless `providers` is set. |
-| `providers` | `Record<string, ProviderRule>` | — | Multi-provider mode: map of provider ID → rule (`uaTarget` / `headersToStrip` / `headersToInject`). Mutually exclusive with `providerId`. |
+| `providers` | `Record<string, ProviderRule>` | — | Multi-provider mode: map of provider ID → rule (`uaTarget` / `headersToStrip` / `headersToInject` / `toolRenameSuffix`). Mutually exclusive with `providerId`. |
 | `uaTarget` | `string` | — | Target User-Agent. Omit to leave the UA unchanged. |
 | `headersToStrip` | `string[]` | `[]` | Header names to delete from outgoing requests. |
 | `headersToInject` | `Record<string, string>` | `{}` | Headers to inject when missing. **Never overwrites** existing values. |
+| `toolRenameSuffix` | `string` | — | Suffix appended to every tool name in the request body (tools list, message-history `tool_calls`, named `tool_choice`); response `tool_calls` names are mapped back. **V1 only, and only OpenAI-compatible request bodies** — Anthropic-shape bodies pass through unchanged. V2 ignores the option with an error log. |
 | `debug` | `boolean` | `false` | Enable debug logging to stderr. |
 
 ## Environment variables

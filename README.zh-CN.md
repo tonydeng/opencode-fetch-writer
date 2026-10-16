@@ -175,10 +175,11 @@ v0.2.0 起支持通过 `providers` 映射在**一个插件条目**中管理多�
 | 选项 | 类型 | 默认值 | 说明 |
 |---|---|---|---|
 | `providerId` | `string` | — | 旧版单 provider 模式：Provider ID（`provider` 映射中的键）。未设 `providers` 时必填。 |
-| `providers` | `Record<string, ProviderRule>` | — | 多 provider 模式：provider ID → 规则（`uaTarget` / `headersToStrip` / `headersToInject`）的映射。与 `providerId` 互斥。 |
+| `providers` | `Record<string, ProviderRule>` | — | 多 provider 模式：provider ID → 规则（`uaTarget` / `headersToStrip` / `headersToInject` / `toolRenameSuffix`）的映射。与 `providerId` 互斥。 |
 | `uaTarget` | `string` | — | 目标 User-Agent。缺省则不改写 UA。 |
 | `headersToStrip` | `string[]` | `[]` | 需要从出站请求中删除的 header 名。 |
 | `headersToInject` | `Record<string, string>` | `{}` | 缺失时注入的 headers。**从不覆盖**已有值。 |
+| `toolRenameSuffix` | `string` | — | 为请求体中每个工具名追加的后缀（tools 列表、消息历史 `tool_calls`、具名 `tool_choice`）；响应 `tool_calls` 名字会还原。**仅 V1，且仅 OpenAI 兼容请求体**——Anthropic 形态的请求体原样放行。V2 下该选项被忽略并打一条 error 日志。 |
 | `debug` | `boolean` | `false` | 向 stderr 输出调试日志。 |
 
 ## 环境变量

@@ -50,6 +50,15 @@ export const fetchWriterV2: OpencodePlugin.Plugin = {
     reportConfigurationError(rules, log)
     if (rules === undefined || rules.size === 0) return
 
+    for (const rule of rules.values()) {
+      if (rule.toolRenameSuffix !== undefined) {
+        console.error(
+          `${LOG_PREFIX} toolRenameSuffix needs body rewriting, which the V2 http.request hook cannot reach (the request body is already encoded); option ignored`,
+        )
+        break
+      }
+    }
+
     for (const [providerID, rule] of rules) {
       await ctx.session.hook(
         "http.request",

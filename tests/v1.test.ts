@@ -227,4 +227,100 @@ describe("V1 entrypoint (config hook + options.fetch wrapping)", () => {
 
     expect((options.fetch as WrappedFetch)[MARKER]).toBe(true)
   })
+
+  test("toolRenameSuffix renames outbound tools and restores response tool_calls", async () => {
+    let sentBody: string | undefined
+    const responseBody = JSON.stringify({
+      choices: [{ message: { tool_calls: [{ id: "c1", function: { name: "write_r", arguments: "{}" } }] } }],
+    })
+    const options: Record<string, unknown> = {
+      fetch: (async (_req: RequestInfo | URL, init?: RequestInit) => {
+        sentBody = typeof init?.body === "string" ? init.body : undefined
+        return new Response(responseBody, { headers: { "content-type": "application/json" } })
+      }) as WrappedFetch,
+    }
+    const config = { provider: { acme: { options } } } as ConfigParam
+
+    const hooks = await loadV1({ providerId: "acme", toolRenameSuffix: "_r" })
+    await hooks.config?.(config)
+
+    const response = await (options.fetch as WrappedFetch)("https://example.com/v1/chat", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        messages: [],
+        tools: [{ type: "function", function: { name: "write", parameters: {} } }],
+      }),
+    })
+
+    const sent = JSON.parse(sentBody!) as { tools: Array<{ function: { name: string } }> }
+    expect(sent.tools[0].function.name).toBe("write_r")
+    const parsed = JSON.parse(await response.text()) as {
+      choices: Array<{ message: { tool_calls: Array<{ function: { name: string } }> } }>
+    }
+    expect(parsed.choices[0].message.tool_calls[0].function.name).toBe("write")
+  })
+
+  test("toolRenameSuffix leaves tool-free requests untouched", async () => {
+    let sentBody: string | undefined
+    const options: Record<string, unknown> = {
+      fetch: (async (_req: RequestInfo | URL, init?: RequestInit) => {
+        sentBody = typeof init?.body === "string" ? init.body : undefined
+        return new Response("ok")
+      }) as WrappedFetch,
+    }
+    const config = { provider: { acme: { options } } } as ConfigParam
+
+    const hooks = await loadV1({ providerId: "acme", toolRenameSuffix: "_r" })
+    await hooks.config?.(config)
+
+    const response = await (options.fetch as WrappedFetch)("https://example.com/v1/chat", {
+      method: "POST",
+      body: JSON.stringify({ messages: [{ role: "user", content: "hi" }] }),
+    })
+
+    expect(sentBody).toBe(JSON.stringify({ messages: [{ role: "user", content: "hi" }] }))
+    expect(await response.text()).toBe("ok")
+  })
+
+  test("toolRenameSuffix handles fetch(new Request(...)) and keeps the abort signal wired", async () => {
+    let received: Request | undefined
+    const responseBody = JSON.stringify({
+      choices: [{ message: { tool_calls: [{ id: "c1", function: { name: "write_r", arguments: "{}" } }] } }],
+    })
+    const options: Record<string, unknown> = {
+      fetch: (async (req: RequestInfo | URL, _init?: RequestInit) => {
+        received = req instanceof Request ? req : undefined
+        return new Response(responseBody, { headers: { "content-type": "application/json" } })
+      }) as WrappedFetch,
+    }
+    const config = { provider: { acme: { options } } } as ConfigParam
+
+    const hooks = await loadV1({ providerId: "acme", toolRenameSuffix: "_r" })
+    await hooks.config?.(config)
+
+    const controller = new AbortController()
+    const request = new Request("https://example.com/v1/chat", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        messages: [],
+        tools: [{ type: "function", function: { name: "write", parameters: {} } }],
+      }),
+      signal: controller.signal,
+    })
+    const response = await (options.fetch as WrappedFetch)(request)
+
+    const sent = JSON.parse(await received!.clone().text()) as { tools: Array<{ function: { name: string } }> }
+    expect(sent.tools[0].function.name).toBe("write_r")
+    const parsed = JSON.parse(await response.text()) as {
+      choices: Array<{ message: { tool_calls: Array<{ function: { name: string } }> } }>
+    }
+    expect(parsed.choices[0].message.tool_calls[0].function.name).toBe("write")
+
+    // The rebuilt Request must follow the original's abort signal.
+    expect(received!.signal.aborted).toBe(false)
+    controller.abort()
+    expect(received!.signal.aborted).toBe(true)
+  })
 })
